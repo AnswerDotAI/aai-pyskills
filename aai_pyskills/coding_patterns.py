@@ -10,13 +10,12 @@ notation: /why
 - improving a tool > finishing one task    /helps future tasks, sessions, team
 - ergonomics: matter as much as capability
 - friction: fix or raise; never quietly work around    /workarounds are the learned default; our tools are one edit away
-- APIs, upstream too: improve beyond smallest fix; another package's private names, reproduced dependency logic, helpers only bridging a package's gap: workaround signs; propose the API that removes them
+- APIs, upstream too: private names, cloned dep logic, gap-bridging helpers = workaround signs; fix or discuss the upstream API
 - right owner > fewer files/repos: no wrong-layer shortcuts or workarounds to leave siblings or deps untouched    /leaks boundaries
 - omit: constructs whose need you can't explain (redundant `str(x)` or other coercions, unmutated `list(x)` copies, just-in-case try/excepts, unused parameters); weightless type hints, docstrings, boilerplate; prefer concise readable code    /readers infer necessity: useless constructs cost confusion, doubled in nbdev where tests document code
 - useful features: needn't await request; judge by design needs, user expectations    /open-source users meeting gaps assume incapability, leave
 - comments: only what code can't show, next to that code; never provenance, next-line narration, change justification    /those address reviewers, not future readers
-- refactor continually, encountered mess too: as simple as design allows; inherited mess never excuses more
-- fix needing design decision: report, don't decide
+- bugs, mess, refactors (our repos): priority, never ignore; clear → fix now; design/complexity → discuss
 - one home per fact, constant or piece of logic; noticed duplication: remove all of it together, templates, tests and docs too; never fix copies singly; new duplication: explicit agreement only
 
 ## Tools
