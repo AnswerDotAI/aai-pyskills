@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aai-pyskills"
+dynamic = ["version"]
+description = "Reusable pyskills for coding, writing, understanding, and vision across harnesses and Solveit"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{ name = "aai-pyskills contributors" }]
+classifiers = ["Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only"]
+dependencies = ["fastcore>=2.2.47", "pypdfium2>=5", "pyvips[binary]>=3", "python-fastllm>=0.0.75", "pyskills>=0.0.35"]
+
+[project.entry-points.pyskills]
+coding_patterns = "aai_pyskills.coding_patterns"
+nbreview = "aai_pyskills.nbreview"
+write_prose = "aai_pyskills.write_prose"
+write_docs = "aai_pyskills.write_docs"
+write_summary = "aai_pyskills.write_summary"
+write_llms = "aai_pyskills.write_llms"
+vision = "aai_pyskills.vision"
+understand = "aai_pyskills.understand"
+
+[project.optional-dependencies]
+dev = ["fastship", "build", "twine"]
+solveit = ["dialoghelper>=0.2.55"]
+
+[project.urls]
+Homepage = "https://github.com/AnswerDotAI/aai-pyskills"
+Repository = "https://github.com/AnswerDotAI/aai-pyskills"
+Issues = "https://github.com/AnswerDotAI/aai-pyskills/issues"
+
+[tool.fastship]
+branch = "main"
+
+[tool.setuptools.dynamic]
+version = { attr = "aai_pyskills.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["aai_pyskills"]
+
+[tool.pytest.ini_options]
+markers = ["slow: needs live network services; deselected by default"]
+addopts = "-m 'not slow'"
