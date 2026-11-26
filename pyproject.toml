@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 authors = [{ name = "aai-pyskills contributors" }]
 classifiers = ["Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only"]
-dependencies = ["fastcore>=2.2.47", "pypdfium2>=5", "pyvips[binary]>=3", "python-fastllm>=0.0.84", "pyskills>=0.0.35"]
+dependencies = ["fastcore>=2.2.47", "pypdfium2>=5", "pyvips[binary]>=3", "python-fastllm>=0.0.85", "pyskills>=0.0.35"]
 
 [project.entry-points.pyskills]
 coding_patterns = "aai_pyskills.coding_patterns"

@@ -19,7 +19,6 @@ import pypdfium2 as pdfium, pyvips
 from fastllm.acomplete import acomplete
 from fastllm.types import get_model_info
 from aidialog.msg_parts import Msg, Text, InputImage
-from .llms import models
 
 __all__ = ['pdf2pngs', 'look', 'transcribe', 'VisionError']
 
@@ -70,7 +69,7 @@ def pdf2pngs(
 async def _ask(prompt, imgs, charter, model, effort, max_tokens):
     content = [Text(prompt)]
     for p in imgs: content += [Text(p.name), InputImage(to_data_url(p))]
-    res = await acomplete([Msg('user', content)], models.get(model, model), system=charter, reasoning_effort=effort, max_tokens=max_tokens)
+    res = await acomplete([Msg('user', content)], model, system=charter, reasoning_effort=effort, max_tokens=max_tokens)
     if res.finish_reason != 'stop' or not res.message.text: raise VisionError(res)
     return res
 
@@ -78,7 +77,7 @@ async def _ask(prompt, imgs, charter, model, effort, max_tokens):
 async def look(
     question,  # What to check; be specific, and say what the images are
     *paths,  # Image, SVG, and/or PDF files (PDFs are rasterized per page)
-    model='sol',  # An `llms.models` short name, or any full 'vendor/model' spec
+    model='sol',  # A `fastllm` short name, or any full 'vendor/model' spec
     effort='medium',  # Reasoning effort, as supported by the model
     scale=2,  # Rasterization scale for PDF pages
     max_tokens=None,  # Output budget; None lets the backend choose the model's limit
@@ -108,7 +107,7 @@ async def transcribe(
     output=None,  # Markdown path; defaults to the input path with its suffix replaced by .md
     pages=None,  # PDF only: iterable of 1-based page numbers, e.g. range(5, 7); default: all
     extra_instructions='',  # Document context, specialist terms and symbols, exclusions, notation changes; helps resolve ambiguous readings
-    model='opus',  # An `llms.models` short name, or any full 'vendor/model' spec
+    model='opus',  # A `fastllm` short name, or any full 'vendor/model' spec
     effort='medium',  # Reasoning effort, as supported by the model
     dpi=288,  # PDF rendering resolution; image inputs retain their own resolution
     max_tokens=None,  # Output budget; None lets the backend choose the model's limit
@@ -140,5 +139,5 @@ async def transcribe(
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(res.message.text.rstrip()+'\n')
     priced = 'cost' in res.usage.raw or (bool(res.usage.raw) and get_model_info(res.model, res.vendor_name))
-    used_model = models.get(model, model) or (f'{res.vendor_name}/{res.model}' if res.vendor_name else res.model)
+    used_model = f'{res.vendor_name}/{res.model}' if res.vendor_name else res.model
     return dict(path=output, model=used_model, usage=res.usage, duration_ms=duration_ms, cost=res.cost if priced else None)

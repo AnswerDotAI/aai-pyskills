@@ -20,7 +20,7 @@ In a Python kernel with `pyskills` loaded, run `list_pyskills()` to list registe
 - `write_llms`: dense documentation rules for LLM-facing files (`llms.txt`, pyskills, prompts).
 - `understand`: building and testing a Theory (Naur, Socrates, Knoblich et al., Lakatos) before design or review work.
 - `vision`: image and PDF inspection (`look`, `transcribe`, `pdf2pngs`) keeping visual content out of the caller's context.
-- `llms`: short model names (`models`) and one-shot `ask()` helper used by `write_prose`, `write_docs`, and `vision`.
+- `llms`: one-shot `ask()` helper over `fastllm` used by `write_prose`, `write_docs`, and `vision`.
 
 ## Solveit and harness LLM calls
 
