@@ -24,7 +24,7 @@ In a Python kernel with `pyskills` loaded, run `list_pyskills()` to list registe
 
 ## Solveit and harness LLM calls
 
-`llms.ask` and `vision.look`/`transcribe` check `JUPYGATE_LAUNCHER == 'rustygate'`. Inside a Solveit kernel, requests route over the `rustygate` comm via `dialoghelper` (`/api/prompt`) using the prompting user's Solve-LP access without direct provider API keys. Outside Solveit, requests go through `fastllm`.
+All LLM calls (`llms.ask`, `vision.look`, `vision.transcribe`) go through `fastllm`. Inside a Solveit `rustygate` kernel, `rustygate` sets `FASTLLM_RESPONSES_URL` so `fastllm` routes through the gateway's `/llm` proxy to Solve-LP automatically unless a provider's own `*_API_KEY` is set.
 
 ## Development
 

@@ -7,9 +7,9 @@ for|screenshots, diagrams, rendered docs|scanned papers, code, math notation, di
 reading|what's visible|context resolves ambiguous readings
 images|downscaled to ≤1 MP|full resolution
 
-- both: one tool-free request (Solveit `/api/prompt` inside rustygate, else fastllm); model sees images + instructions only, no filesystem
+- both: one tool-free fastllm request; model sees images + instructions only, no filesystem
 - input: images (incl. SVG TIFF WebP HEIC GIF) → PNG on white via libvips; PDFs rendered by pypdfium2
-- `look`, `transcribe`: Solveit comm via `dialoghelper` inside rustygate, else provider API credentials for fastllm; `pdf2pngs` needs neither
+- `look`, `transcribe`: need `fastllm` credentials (or `FASTLLM_RESPONSES_URL` inside Solveit); `pdf2pngs` needs none
 - important transcription: check against source"""
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -17,9 +17,9 @@ from time import perf_counter
 from fastcore.utils import to_data_url
 import pypdfium2 as pdfium, pyvips
 from fastllm.acomplete import acomplete
-from fastllm.types import Completion, Usage, get_model_info
+from fastllm.types import get_model_info
 from aidialog.msg_parts import Msg, Text, InputImage
-from .llms import in_solveit, models
+from .llms import models
 
 __all__ = ['pdf2pngs', 'look', 'transcribe', 'VisionError']
 
@@ -67,31 +67,10 @@ def pdf2pngs(
         pyvips.Image.new_from_memory(bm.buffer, bm.width, bm.height, 4, 'uchar')[:3].write_to_file(out[-1])
     return out
 
-def _solveit_completion(r, spec):
-    u = r.get('usage') or {}
-    in_det, out_det = u.get('input_tokens_details') or {}, u.get('output_tokens_details') or {}
-    pt, ct = int(u.get('input_tokens', 0) or 0), int(u.get('output_tokens', 0) or 0)
-    cc = in_det.get('cache_write_tokens', in_det.get('cache_creation_tokens', 0))
-    usage = Usage(pt, ct, int(u.get('total_tokens', pt+ct) or (pt+ct)),
-        int(in_det.get('cached_tokens', 0) or 0), int(cc or 0), int(out_det.get('reasoning_tokens', 0) or 0), raw=u)
-    raw_model = r.get('model') or spec or ''
-    vendor, mname = raw_model.split('/', 1) if '/' in raw_model else (spec.split('/', 1)[0] if spec and '/' in spec else None, raw_model)
-    finish_reason = 'stop' if r.get('status') == 'completed' else (r.get('incomplete_reason') or r.get('status'))
-    return Completion(mname, Msg('assistant', [Text(r.text)] if r.text else []), finish_reason=finish_reason,
-        usage=usage, api_name='openai', vendor_name=vendor, raw=dict(r))
-
-
 async def _ask(prompt, imgs, charter, model, effort, max_tokens):
-    spec = models.get(model, model)
-    if in_solveit():
-        from dialoghelper.core import prompt as dh_prompt
-        r = await dh_prompt(prompt, model=spec, instructions=charter, max_output_tokens=max_tokens,
-            reasoning=effort, images=[dict(url=p, label=p.name) for p in imgs], full=True)
-        res = _solveit_completion(r, spec)
-    else:
-        content = [Text(prompt)]
-        for p in imgs: content += [Text(p.name), InputImage(to_data_url(p))]
-        res = await acomplete([Msg('user', content)], spec, system=charter, reasoning_effort=effort, max_tokens=max_tokens)
+    content = [Text(prompt)]
+    for p in imgs: content += [Text(p.name), InputImage(to_data_url(p))]
+    res = await acomplete([Msg('user', content)], models.get(model, model), system=charter, reasoning_effort=effort, max_tokens=max_tokens)
     if res.finish_reason != 'stop' or not res.message.text: raise VisionError(res)
     return res
 
@@ -137,7 +116,7 @@ async def transcribe(
 ):
     """Save a Markdown transcription of the image or PDF at `path`, returning `path`, `model`, `usage`, `duration_ms` and estimated USD `cost` (None if unknown)
 
-    - request: selected pages in one tool-free call (Solveit `/api/prompt` inside rustygate, else fastllm); long document: one call per coherent section
+    - request: selected pages in one tool-free fastllm call; long document: one call per coherent section
     - models: Opus 5.5 medium: likely best cost/quality (our APL-paper comparisons); Astra medium: better nesting diagrams, ~3× cost; Gemini Flash low: cheaper, faster, less accurate
     - output: Markdown tables; figures: descriptive alt text + `figures/pNNN-left-top-right-bottom.png` refs, full-page coordinates 0–1000, for later extraction (files not created); image input = page 1; default prompt: transcription only, no commentary or notes
     - existing `output`: replaced only after a complete response; incomplete: `VisionError.completion` keeps partial text, usage
