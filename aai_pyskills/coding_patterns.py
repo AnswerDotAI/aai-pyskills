@@ -73,6 +73,7 @@ for i in range(n): result[i] = 0
 - red-green: only for assertions actually added or revised, to check the test works (`doc(nbdev.skill)`)
 - pytest: checks that fit no readable notebook lesson AND are too complex or distracting even for `#|hide`; as few as possible, combined into readable, faster stories
 - one-off checks: verify in `clikernel` and discard; permanent pytest only under criteria above (nbdev: keep exploration cells that double as readable narrative)    /smoke checks belong in the kernel, not test files
+- browser checks: default none; drive a browser only on request or concrete DOM, layout, or browser-runtime uncertainty reading code and existing tests can't settle
 - assert logic and guarantees, not incidental renderings, reprs or field order (content in Markdown display block, not exact text); NEVER lock in behavior unless essential logic or contract guaranteed forever
 - Rust: no inline `#[cfg(test)]` tests; set `test = false` (and `doctest = false` on libs) on `[lib]`/`[[bin]]`, put Rust tests in `tests/`    /inline tests push testing internals over real external behavior, hide useful APIs instead of making them public, and don't play well with fastws
 ## CLI harness
